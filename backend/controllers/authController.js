@@ -2,30 +2,24 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {User} from "../models/User.js";
 
-// export const registerUser = async (req, res) => {
-//   const { email, password } = req.body;
-//   try {
-//     let user = await User.findOne({ email });
-//     if (user) return res.status(400).json({ msg: "User already exists" });
-
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     user = new User({ email, password: hashedPassword });
-
-//     await user.save();
-//     res.status(201).json({ msg: "User registered successfully" });
-//   } catch (error) {
-//     res.status(500).json({ msg: "Server error" });
-//   }
-// };
-
-
 export const register = async (req, res) => {
     try {
-        const { fullname, email, password } = req.body;
+        const { fullname, email, password, confirmPassword } = req.body;
+
+        console.log("Received Data:", { fullname, email, password, confirmPassword }); // ✅ Debugging
+
         // Check if all fields are provided
-        if (!fullname || !email || !password) {
+        if (!fullname || !email || !password || !confirmPassword) {
             return res.status(400).json({
-                message: "Full name, email, and password are required",
+                message: "All fields are required!",
+                success: false
+            });
+        }
+
+        // Check if password and confirmPassword match
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                message: "Password and Confirm Password do not match!",
                 success: false
             });
         }
@@ -50,11 +44,10 @@ export const register = async (req, res) => {
         });
 
         res.status(201).json({
-            success: true, // ✅ Add this field
+            success: true,
             message: "User registered successfully",
             user: { fullname, email },
-          });
-      
+        });
 
     } catch (error) {
         console.error("Error in registration:", error);
@@ -64,6 +57,7 @@ export const register = async (req, res) => {
         });
     }
 };
+
 
 export const login = async (req, res) => {
   try {

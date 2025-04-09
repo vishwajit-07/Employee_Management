@@ -16,21 +16,43 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import useFetchEmployees from "../hooks/useFetchAllEmployees.jsx"; // Custom hook
-import { toast } from "sonner"; // Import toast for notifications
+import useFetchEmployees from "../hooks/useFetchAllEmployees.jsx";
+import { toast } from "sonner";
 import { setEmployees } from "../redux/employeeSlice.js";
+import { styled } from "@mui/system";
 
-const EmployeeTable = () => {
-  useFetchEmployees(); // Fetch employees when component mounts
+// ✅ Glassmorphic styled TableContainer
+const GlassTableContainer = styled(TableContainer)({
+  background: "rgba(255, 255, 255, 0.2)",
+  backdropFilter: "blur(10px)",
+  WebkitBackdropFilter: "blur(10px)",
+  borderRadius: "12px",
+  boxShadow: "0px 4px 15px rgba(255, 255, 255, 0.5)",
+  border: "2px solid rgba(255, 255, 255, 0.3)",
+});
+
+const GlassTable = styled(Table)({
+  "& th, & td": {
+    padding: "12px",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.3)",
+    color: "#222",
+  },
+  "& th": {
+    background: "rgba(255, 255, 255, 0.4)",
+    fontWeight: "bold",
+  },
+});
+
+const EmployeeTable = ({ setSnackbarMessage, setSnackbarSeverity, setOpenSnackbar }) => {
+  useFetchEmployees();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const { employees = [], error } = useSelector((store) => store.employees);
   const [filterEmployees, setFilterEmployees] = useState([]);
 
   useEffect(() => {
     setFilterEmployees(employees);
-  }, [employees]); // Update filtered employees when employees change
+  }, [employees]);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -70,10 +92,13 @@ const EmployeeTable = () => {
         );
         setFilterEmployees(updatedEmployees);
         dispatch(setEmployees(updatedEmployees));
-        toast.success("Employee deleted successfully!");
+        setSnackbarMessage("Employee deleted successfully!");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
       } else {
-        toast.error("Server problem");
-      }
+        setSnackbarMessage("Server problem while deleting employee.");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);      }
     } catch (error) {
       console.error("Error deleting employee:", error);
       toast.error("Failed to delete employee.");
@@ -83,13 +108,13 @@ const EmployeeTable = () => {
   };
 
   return (
-    <TableContainer component={Paper}>
+    <GlassTableContainer component={Paper}>
       {error && <Alert severity="error">{error}</Alert>}
       {!error && filterEmployees.length === 0 && (
         <Alert severity="info">No employees found</Alert>
       )}
       {!error && filterEmployees.length > 0 && (
-        <Table>
+        <GlassTable>
           <TableHead>
             <TableRow>
               <TableCell>#</TableCell>
@@ -112,12 +137,8 @@ const EmployeeTable = () => {
                 <TableCell>{emp.address}</TableCell>
                 <TableCell>{emp.experience || "Fresher"}</TableCell>
                 <TableCell>{emp.lastCompany}</TableCell>
-                <TableCell>
-                  {new Date(emp.joiningDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  {new Date(emp.resignationDate).toLocaleDateString()}
-                </TableCell>
+                <TableCell>{new Date(emp.joiningDate).toLocaleDateString()}</TableCell>
+                <TableCell>{new Date(emp.resignationDate).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <IconButton onClick={(event) => handleMenuOpen(event, emp)}>
                     <MoreVertIcon />
@@ -126,20 +147,35 @@ const EmployeeTable = () => {
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
                     onClose={handleMenuClose}
+                    sx={{
+                      "& .MuiPaper-root": {
+                        background: "rgba(255, 255, 255, 0.2)",
+                        backdropFilter: "blur(10px)",
+                        WebkitBackdropFilter: "blur(10px)",
+                        border: "2px solid rgba(255, 255, 255, 0.4)",
+                        boxShadow: "0px 4px 15px rgba(255, 255, 255, 0.5)",
+                        borderRadius: "10px",
+                      },
+                      "& .MuiMenuItem-root": {
+                        color: "#222",
+                        fontWeight: "bold",
+                        "&:hover": {
+                          background: "rgba(255, 255, 255, 0.3)",
+                        },
+                      },
+                    }}
                   >
                     <MenuItem onClick={handleView}>View history</MenuItem>
                     <MenuItem onClick={handleUpdate}>Update</MenuItem>
-                    <MenuItem onClick={handleDelete}>
-                      Delete
-                    </MenuItem>
+                    <MenuItem onClick={() => handleDelete(emp._id)}>Delete</MenuItem>
                   </Menu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </GlassTable>
       )}
-    </TableContainer>
+    </GlassTableContainer>
   );
 };
 

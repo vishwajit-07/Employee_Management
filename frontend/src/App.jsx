@@ -8,7 +8,7 @@ import EmployeeForm from "./components/EmployeeForm.jsx";
 import ViewEmployee from "./components/pages/ViewEmployee.jsx";
 import UpdateEmployee from "./components/pages/UpdateEmployee.jsx";
 import PrivateRoute from "./components/pages/PrivateRoutes.jsx";
-
+import LandingPage from "./components/pages/LandingPage.jsx";
 
 function App() {
   const user = useSelector(store => store.auth.user);  // Correct path to access the user
@@ -18,6 +18,7 @@ function App() {
     <Router>
       <Container>
         <Routes>
+          <Route path="/" element={<LandingPage/>}></Route>
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
           <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
 

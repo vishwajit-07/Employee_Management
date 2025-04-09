@@ -336,35 +336,45 @@ export const updateEmployee = async (req, res) => {
 
         // ✅ Track Changes and Store History
         const historyEntries = [];
-        const updatedFields = { name, email, address, experience: numericExperience, lastCompany, joiningDate: joinDate };
-
-        if (resignDate) {
-            updatedFields.resignationDate = resignDate;
-        }
-
+        const updatedFields = {
+            name,
+            email,
+            address,
+            experience: numericExperience,
+            lastCompany,
+            joiningDate: joinDate,
+            resignationDate: resignDate || null,
+        };
         for (const key in updatedFields) {
-            if (employee[key] !== updatedFields[key]) {
+            let oldValue = employee[key];
+            let newValue = updatedFields[key];
+            // 🛠 Fix: Convert dates to YYYY-MM-DD format for accurate comparison
+            if (key === "joiningDate" || key === "resignationDate") {
+                oldValue = oldValue ? new Date(oldValue).toISOString().split("T")[0] : null;
+                newValue = newValue ? new Date(newValue).toISOString().split("T")[0] : null;
+            }
+            // 🔥 Only save history if values actually change
+            if (oldValue !== newValue) {
                 historyEntries.push({
                     field: key,
-                    oldValue: employee[key],
-                    newValue: updatedFields[key],
+                    oldValue: oldValue,
+                    newValue: newValue,
                     date: new Date(),
                 });
             }
         }
-
-        // ✅ Update document manually (ensures history gets saved)
-        employee.history.push(...historyEntries);
-        Object.assign(employee, updatedFields);
-        await employee.save();
-
+        // ✅ Only update if there are actual changes
+        if (historyEntries.length > 0) {
+            employee.history.push(...historyEntries);
+            Object.assign(employee, updatedFields);
+            await employee.save();
+        }
         return res.status(200).json({
             message: "Employee updated successfully!",
             success: true,
             employee,
         });
     } catch (error) {
-        console.error("Error updating employee:", error);
         return res.status(500).json({
             message: "Internal Server Error",
             success: false,
@@ -372,6 +382,7 @@ export const updateEmployee = async (req, res) => {
         });
     }
 };
+
 
 // Delete Employee
 export const deleteEmployee = async (req, res) => {

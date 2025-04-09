@@ -33,7 +33,7 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="fixed" elevation={2} sx={{ backgroundColor: "primary.main", width: "100%" }}>
+    <AppBar position="fixed" elevation={2} sx={{ backgroundColor: "#f5c000", width: "100%" }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         {/* Dashboard Title */}
         <Typography variant="h6" component="div" sx={{ flexGrow: 1, textAlign: { xs: "center", sm: "left" } }}>
